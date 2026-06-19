@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Prism — a developer browser: split panes, per-pane viewport control, interaction & route mirroring, a cross-pane network diff, and a built-in SSH dev proxy.",
   "main": "./out/main/index.js",
-  "author": "Jin",
+  "author": "Moravec",
   "license": "MIT",
   "scripts": {
     "dev": "electron-vite dev",
@@ -42,7 +42,7 @@
     "vite": "^5.3.1"
   },
   "build": {
-    "appId": "com.jin.prism",
+    "appId": "com.moravec.prism",
     "productName": "Prism",
     "artifactName": "${productName}-${version}-${arch}.${ext}",
     "directories": {
