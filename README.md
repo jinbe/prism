@@ -44,6 +44,9 @@ pnpm run typecheck    # svelte-check
 Run `pnpm run build` and `pnpm run typecheck` before you push; both should be
 clean. `svelte-check` is the type gate (the Vite build doesn't typecheck `.ts`).
 
+Signed, notarized macOS releases are cut by pushing a version tag; see
+[RELEASING.md](RELEASING.md).
+
 ## Dev Proxy
 
 A `chrome-dev`-style SOCKS5 tunnel, built in (`src/main/devProxy.ts`):
