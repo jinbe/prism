@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
   import { FileDiff } from '@pierre/diffs'
+  import { X, Equals } from '../lib/icons'
 
   interface Props {
     path: string
@@ -84,14 +85,18 @@
 
 <div class="bodydiff">
   <div class="bodydiff-head">
-    <strong>Response diff</strong>
-    <span class="dim">{path}</span>
-    {#if identical}<span class="net-chip">bodies identical</span>{/if}
+    <span class="panel-title">Response<span class="sub">body diff</span></span>
+    <span class="path">{path}</span>
+    {#if identical}
+      <span class="net-chip"><Equals />identical</span>
+    {/if}
     <div class="spacer"></div>
-    <button class="btn icon" title="Close" onclick={onClose}>✕</button>
+    <button class="btn-icon" title="Close" aria-label="Close" onclick={onClose}>
+      <X />
+    </button>
   </div>
   {#if phase === 'loading'}
-    <div class="bodydiff-msg dim">Fetching response bodies…</div>
+    <div class="bodydiff-msg loading">Fetching response bodies…</div>
   {:else if phase === 'error'}
     <div class="bodydiff-msg bad">{message}</div>
   {/if}

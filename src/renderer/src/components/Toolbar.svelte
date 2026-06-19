@@ -1,5 +1,14 @@
 <script lang="ts">
   import type { ProxyStatus } from '../../../preload/index'
+  import {
+    Plus,
+    ArrowLineRight,
+    CursorClick,
+    Path,
+    Pulse,
+    PlugsConnected,
+    GearSix
+  } from '../lib/icons'
 
   interface Props {
     globalUrl: string
@@ -31,76 +40,101 @@
 
   let showProxyCfg = $state(false)
 
-  const pillClass = $derived(
-    proxy.enabled ? 'proxy-pill on' : proxy.reason ? 'proxy-pill err' : 'proxy-pill'
-  )
+  const pillClass = $derived(proxy.enabled ? 'pill on' : proxy.reason ? 'pill err' : 'pill')
   const pillText = $derived(
-    proxy.enabled
-      ? `proxy: ${proxy.host}:${proxy.port}`
-      : proxy.reason
-        ? 'proxy: error'
-        : 'proxy: off'
+    proxy.enabled ? `${proxy.host}:${proxy.port}` : proxy.reason ? 'error' : 'offline'
   )
 </script>
 
-<div class="toolbar">
-  <button class="btn icon" title="Add pane" onclick={onAddPane}>＋</button>
+<div class="topbar">
+  <span class="wordmark">PRIS<b>M</b></span>
+
+  <button class="btn-icon" title="Add pane" aria-label="Add pane" onclick={onAddPane}>
+    <Plus />
+  </button>
 
   <input
-    class="url-input"
-    placeholder="Open URL in all panes (e.g. localhost:3000)…"
+    class="field addr url-command"
+    placeholder="Open a URL in every pane — localhost:3000, example.com…"
     bind:value={globalUrl}
     onkeydown={(e) => e.key === 'Enter' && onOpenAll()}
   />
-  <button class="btn" onclick={onOpenAll}>Open in all</button>
+  <button class="btn btn-primary" onclick={onOpenAll}>
+    <ArrowLineRight />
+    Open in all
+  </button>
 
-  <div class="sep"></div>
-
-  <label class="toggle" title="Replay clicks / scroll / typing across panes">
-    <input type="checkbox" bind:checked={syncInteractions} />
-    Mirror interactions
-  </label>
-  <label class="toggle" title="When one pane navigates, send the others to the same path">
-    <input type="checkbox" bind:checked={syncRoutes} />
-    Mirror routes
-  </label>
-
-  <div class="sep"></div>
+  <div class="rule"></div>
 
   <button
-    class={`btn ${showNet ? 'active' : ''}`}
-    onclick={onToggleNet}
-    title="Cross-pane network diff"
+    class={`seg ${syncInteractions ? 'on' : ''}`}
+    aria-pressed={syncInteractions}
+    title="Replay clicks, scroll, and typing across synced panes"
+    onclick={() => (syncInteractions = !syncInteractions)}
   >
+    <span class="ico"><CursorClick /></span>
+    Interactions
+  </button>
+  <button
+    class={`seg ${syncRoutes ? 'on' : ''}`}
+    aria-pressed={syncRoutes}
+    title="When one pane navigates, send the others to the same path"
+    onclick={() => (syncRoutes = !syncRoutes)}
+  >
+    <span class="ico"><Path /></span>
+    Routes
+  </button>
+
+  <div class="bar-spacer"></div>
+
+  <button
+    class={`seg ${showNet ? 'on' : ''}`}
+    title="Cross-pane network diff"
+    aria-pressed={showNet}
+    onclick={onToggleNet}
+  >
+    <span class="ico"><Pulse /></span>
     Network
   </button>
 
-  <div class="sep"></div>
+  <div class="rule"></div>
 
   <button
-    class={`btn ${proxy.enabled ? 'active' : ''}`}
-    onclick={onToggleProxy}
+    class={`seg ${proxy.enabled ? 'on' : ''}`}
+    aria-pressed={proxy.enabled}
     title="Tunnel localhost to the remote machine over SSH (SOCKS5)"
+    onclick={onToggleProxy}
   >
-    {proxy.enabled ? 'Dev Proxy: ON' : 'Dev Proxy: OFF'}
+    <span class="ico"><PlugsConnected /></span>
+    Dev Proxy
   </button>
-  <button class="btn icon" title="Proxy settings" onclick={() => (showProxyCfg = !showProxyCfg)}
-    >⚙</button
+  <button
+    class="btn-icon"
+    title="Proxy settings"
+    aria-label="Proxy settings"
+    onclick={() => (showProxyCfg = !showProxyCfg)}
   >
+    <GearSix />
+  </button>
   <span class={pillClass} title={proxy.reason ?? ''}>
     <span class="dot"></span>
     {pillText}
   </span>
 
   {#if showProxyCfg}
-    <div class="sep"></div>
-    <label class="toggle">
+    <div class="rule"></div>
+    <label class="cfg">
       host
-      <input style="width:130px" bind:value={proxyHost} />
+      <input class="field" style="width:128px;height:26px" bind:value={proxyHost} />
     </label>
-    <label class="toggle">
+    <label class="cfg">
       port
-      <input style="width:64px" type="number" bind:value={proxyPort} />
+      <input
+        class="field addr"
+        style="width:64px;height:26px"
+        type="number"
+        bind:value={proxyPort}
+      />
     </label>
   {/if}
 </div>

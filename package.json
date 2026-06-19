@@ -56,6 +56,10 @@
     }
   },
   "dependencies": {
-    "@pierre/diffs": "^1.2.11"
+    "@fontsource-variable/bricolage-grotesque": "^5.2.10",
+    "@fontsource-variable/hanken-grotesk": "^5.2.8",
+    "@fontsource-variable/spline-sans-mono": "^5.2.8",
+    "@pierre/diffs": "^1.2.11",
+    "phosphor-svelte": "^3.1.0"
   }
 }

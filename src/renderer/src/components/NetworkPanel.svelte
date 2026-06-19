@@ -1,6 +1,7 @@
 <script lang="ts">
   import { buildRows, formatBytes, type NetStore, type Row } from '../netStore'
   import BodyDiff from './BodyDiff.svelte'
+  import { X } from '../lib/icons'
 
   interface Col {
     id: string
@@ -47,8 +48,8 @@
 
   function cellText(row: Row, colId: string): string {
     const cell = row.cells[colId]
-    if (!cell) return '—'
-    if (cell.failed) return '✗ fail'
+    if (!cell) return '·'
+    if (cell.failed) return 'failed'
     const status = cell.status != null ? String(cell.status) : '…'
     const size = cell.size ? ` · ${formatBytes(cell.size)}` : ''
     const dup = cell.count > 1 ? ` ×${cell.count}` : ''
@@ -64,25 +65,30 @@
 
 <div class="netpanel">
   <div class="net-head">
-    <strong>Network</strong>
-    <span class="dim">cross-pane diff</span>
+    <span class="panel-title">Network<span class="sub">cross-pane diff</span></span>
 
     <div class="net-summary">
       {#each summary as s (s.id)}
         <span class="net-chip" title={s.label}>
-          {s.label}: {s.total} req · {formatBytes(s.bytes)}{#if s.fails}
+          <span class="lbl">{s.label}</span>
+          {s.total} req · {formatBytes(s.bytes)}{#if s.fails}
             · <span class="bad">{s.fails} failed</span>{/if}
         </span>
       {/each}
     </div>
 
     <div class="spacer"></div>
-    <label class="toggle">
-      <input type="checkbox" bind:checked={onlyDiff} />
+    <button
+      class={`seg ${onlyDiff ? 'on' : ''}`}
+      aria-pressed={onlyDiff}
+      onclick={() => (onlyDiff = !onlyDiff)}
+    >
       Only differences
-    </label>
+    </button>
     <button class="btn" onclick={onClear}>Clear</button>
-    <button class="btn icon" title="Close" onclick={onClose}>✕</button>
+    <button class="btn-icon" title="Close" aria-label="Close" onclick={onClose}>
+      <X />
+    </button>
   </div>
 
   <div class="net-table-wrap">
@@ -106,18 +112,25 @@
             <td class="col-method">{row.method}</td>
             <td class="col-path" title={row.path}>{row.path}</td>
             {#each cols as c (c.id)}
-              <td class={row.cells[c.id] ? (row.cells[c.id].failed ? 'bad' : '') : 'absent'}>
+              <td
+                class={`cell ${row.cells[c.id] ? (row.cells[c.id].failed ? 'bad' : '') : 'absent'}`}
+              >
                 {cellText(row, c.id)}
               </td>
             {/each}
           </tr>
         {/each}
         {#if shown.length === 0}
-          <tr
-            ><td colspan={cols.length + 2} class="dim center"
-              >No requests captured yet. Navigate a pane.</td
-            ></tr
-          >
+          <tr>
+            <td colspan={cols.length + 2}>
+              <div class="empty">
+                <b>{onlyDiff ? 'No differences' : 'Nothing captured yet'}</b>
+                {onlyDiff
+                  ? 'Every shared request matched across panes.'
+                  : 'Navigate a pane and requests will line up here, side by side.'}
+              </div>
+            </td>
+          </tr>
         {/if}
       </tbody>
     </table>

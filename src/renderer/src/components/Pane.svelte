@@ -9,9 +9,11 @@
     type PaneEventMsg,
     type PaneHandle
   } from '../types'
+  import { CaretLeft, CaretRight, ArrowClockwise, Code, X, Link, LinkBreak } from '../lib/icons'
 
   interface Props {
     pane: PaneModel
+    index: number
     partition: string
     preloadUrl: string
     canClose: boolean
@@ -25,6 +27,7 @@
 
   let {
     pane,
+    index,
     partition,
     preloadUrl,
     canClose,
@@ -153,37 +156,53 @@
 
 <div class="pane">
   <div class="pane-head">
-    <button class="btn icon" title="Back" onclick={() => wv?.goBack()}>‹</button>
-    <button class="btn icon" title="Forward" onclick={() => wv?.goForward()}>›</button>
-    <button class="btn icon" title="Reload" onclick={() => wv?.reload()}>↻</button>
+    <span class="pane-tag">{String(index + 1).padStart(2, '0')}</span>
 
-    <select value={pane.device} onchange={(e) => onPreset((e.target as HTMLSelectElement).value)}>
+    <div class="pane-nav">
+      <button class="btn-icon" title="Back" aria-label="Back" onclick={() => wv?.goBack()}>
+        <CaretLeft />
+      </button>
+      <button class="btn-icon" title="Forward" aria-label="Forward" onclick={() => wv?.goForward()}>
+        <CaretRight />
+      </button>
+      <button class="btn-icon" title="Reload" aria-label="Reload" onclick={() => wv?.reload()}>
+        <ArrowClockwise />
+      </button>
+    </div>
+
+    <select
+      class="preset"
+      value={pane.device}
+      onchange={(e) => onPreset((e.target as HTMLSelectElement).value)}
+    >
       {#each DEVICE_PRESETS as p (p.key)}
         <option value={p.key}>{p.label}</option>
       {/each}
     </select>
 
-    <input
-      class="dim-input"
-      type="number"
-      value={pane.width}
-      onchange={(e) =>
-        onChange(pane.id, {
-          width: Number((e.target as HTMLInputElement).value),
-          device: 'custom'
-        })}
-    />
-    <span class="dim">×</span>
-    <input
-      class="dim-input"
-      type="number"
-      value={pane.height}
-      onchange={(e) =>
-        onChange(pane.id, {
-          height: Number((e.target as HTMLInputElement).value),
-          device: 'custom'
-        })}
-    />
+    <div class="dims" title="Viewport size in CSS pixels">
+      <input
+        type="number"
+        aria-label="Width"
+        value={pane.width}
+        onchange={(e) =>
+          onChange(pane.id, {
+            width: Number((e.target as HTMLInputElement).value),
+            device: 'custom'
+          })}
+      />
+      <span class="x">×</span>
+      <input
+        type="number"
+        aria-label="Height"
+        value={pane.height}
+        onchange={(e) =>
+          onChange(pane.id, {
+            height: Number((e.target as HTMLInputElement).value),
+            device: 'custom'
+          })}
+      />
+    </div>
 
     <input
       class="pane-url"
@@ -193,19 +212,33 @@
       }}
     />
 
-    <button class="btn icon" title="DevTools" onclick={() => wv?.openDevTools()}>⌥⌘I</button>
+    <button
+      class="btn-icon"
+      title="DevTools"
+      aria-label="DevTools"
+      onclick={() => wv?.openDevTools()}
+    >
+      <Code />
+    </button>
 
-    <label class="toggle" title="Mirror interactions with other panes">
-      <input
-        type="checkbox"
-        checked={pane.mirror}
-        onchange={(e) => onChange(pane.id, { mirror: (e.target as HTMLInputElement).checked })}
-      />
-      sync
-    </label>
+    <button
+      class={`sync ${pane.mirror ? 'on' : ''}`}
+      aria-pressed={pane.mirror}
+      title={pane.mirror ? 'Synced — mirroring with other panes' : 'Detached from mirroring'}
+      onclick={() => onChange(pane.id, { mirror: !pane.mirror })}
+    >
+      {#if pane.mirror}<Link />{:else}<LinkBreak />{/if}
+    </button>
 
     {#if canClose}
-      <button class="btn icon" title="Close pane" onclick={() => onClose(pane.id)}>✕</button>
+      <button
+        class="btn-icon"
+        title="Close pane"
+        aria-label="Close pane"
+        onclick={() => onClose(pane.id)}
+      >
+        <X />
+      </button>
     {/if}
   </div>
 

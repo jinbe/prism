@@ -11,6 +11,7 @@
   } from './types'
   import { applyNetEvent, type NetStore } from './netStore'
   import type { ProxyStatus } from '../../preload/index'
+  import { IconContext } from 'phosphor-svelte'
 
   const PANE_PARTITION = 'persist:panes'
 
@@ -134,45 +135,48 @@
   }
 </script>
 
-<div class="app">
-  <Toolbar
-    bind:globalUrl
-    bind:syncInteractions
-    bind:syncRoutes
-    bind:proxyHost
-    bind:proxyPort
-    {proxy}
-    {showNet}
-    onOpenAll={openAll}
-    onAddPane={addPane}
-    onToggleProxy={() => void toggleProxy()}
-    onToggleNet={() => (showNet = !showNet)}
-  />
-
-  <div class="panes">
-    {#each panes as pane (pane.id)}
-      <Pane
-        {pane}
-        partition={PANE_PARTITION}
-        {preloadUrl}
-        canClose={panes.length > 1}
-        {onEvent}
-        {onNavigate}
-        {onReady}
-        {onChange}
-        {onClose}
-        {onAttach}
-      />
-    {/each}
-  </div>
-
-  {#if showNet}
-    <NetworkPanel
-      data={netData}
-      cols={paneCols}
-      tick={netTick}
-      onClear={clearNet}
-      onClose={() => (showNet = false)}
+<IconContext values={{ weight: 'light' }}>
+  <div class="app">
+    <Toolbar
+      bind:globalUrl
+      bind:syncInteractions
+      bind:syncRoutes
+      bind:proxyHost
+      bind:proxyPort
+      {proxy}
+      {showNet}
+      onOpenAll={openAll}
+      onAddPane={addPane}
+      onToggleProxy={() => void toggleProxy()}
+      onToggleNet={() => (showNet = !showNet)}
     />
-  {/if}
-</div>
+
+    <div class="panes">
+      {#each panes as pane, i (pane.id)}
+        <Pane
+          {pane}
+          index={i}
+          partition={PANE_PARTITION}
+          {preloadUrl}
+          canClose={panes.length > 1}
+          {onEvent}
+          {onNavigate}
+          {onReady}
+          {onChange}
+          {onClose}
+          {onAttach}
+        />
+      {/each}
+    </div>
+
+    {#if showNet}
+      <NetworkPanel
+        data={netData}
+        cols={paneCols}
+        tick={netTick}
+        onClear={clearNet}
+        onClose={() => (showNet = false)}
+      />
+    {/if}
+  </div>
+</IconContext>

@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, nativeImage } from 'electron'
+import { app, BrowserWindow, ipcMain, nativeImage, shell } from 'electron'
 import { join } from 'path'
 import * as devProxy from './devProxy'
 import * as netInspector from './netInspector'
@@ -14,7 +14,11 @@ function createWindow(): void {
     height: 900,
     show: false,
     title: 'Prism',
-    backgroundColor: '#1e1e22',
+    backgroundColor: '#1b1712',
+    // Frameless on macOS: keep the traffic lights but fuse the title area into
+    // our own instrument bar. Other platforms keep their native frame.
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    trafficLightPosition: { x: 16, y: 14 },
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       webviewTag: true,
