@@ -23,19 +23,19 @@ A/B and responsive testing.
 
 ## Run it
 
-Requires Node 18+.
+Requires Node 18+ and pnpm.
 
 ```bash
-npm install
-npm run dev      # launches the app with hot reload
+pnpm install
+pnpm run dev      # launches the app with hot reload
 ```
 
 Build distributables:
 
 ```bash
-npm run build        # compile main/preload/renderer into out/
-npm run build:mac    # package a .app/.dmg (also :win, :linux)
-npm run typecheck    # svelte-check
+pnpm run build        # compile main/preload/renderer into out/
+pnpm run build:mac    # package a .app/.dmg (also :win, :linux)
+pnpm run typecheck    # svelte-check
 ```
 
 ## Dev Proxy — how it maps to `chrome-dev`
@@ -112,4 +112,13 @@ CDP `Network.getResponseBody` and renders a syntax-highlighted diff.
   (device-pixel-ratio, touch).
 - Header diffing in the body-diff view; "clear on navigate" for the network table.
 - Persist layout/presets across restarts.
-```
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the
+type/build gates, and the hard-won gotchas to avoid regressing. PRs target `main`
+and require review before merge.
+
+## License
+
+[MIT](LICENSE) © Jin Chan
