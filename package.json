@@ -55,7 +55,7 @@
     "afterSign": "build/notarize.cjs",
     "publish": {
       "provider": "github",
-      "owner": "jinbe",
+      "owner": "Moravec-Pty-Ltd",
       "repo": "prism"
     },
     "mac": {
