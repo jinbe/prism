@@ -7,7 +7,8 @@
     Path,
     Pulse,
     PlugsConnected,
-    GearSix
+    GearSix,
+    SpinnerGap
   } from '../lib/icons'
 
   interface Props {
@@ -16,7 +17,11 @@
     syncRoutes: boolean
     proxyHost: string
     proxyPort: number
+    proxyUser: string
+    proxyPassword: string
     proxy: ProxyStatus
+    connecting: boolean
+    secureStore: boolean
     showNet: boolean
     onOpenAll: () => void
     onAddPane: () => void
@@ -30,7 +35,11 @@
     syncRoutes = $bindable(),
     proxyHost = $bindable(),
     proxyPort = $bindable(),
+    proxyUser = $bindable(),
+    proxyPassword = $bindable(),
     proxy,
+    connecting,
+    secureStore,
     showNet,
     onOpenAll,
     onAddPane,
@@ -39,10 +48,36 @@
   }: Props = $props()
 
   let showProxyCfg = $state(false)
+  let proxyWrapEl: HTMLDivElement | undefined = $state()
 
-  const pillClass = $derived(proxy.enabled ? 'pill on' : proxy.reason ? 'pill err' : 'pill')
+  // Dismiss the settings popover on outside-click / Escape.
+  $effect(() => {
+    if (!showProxyCfg) return
+    const onDown = (e: PointerEvent): void => {
+      if (proxyWrapEl && !proxyWrapEl.contains(e.target as Node)) showProxyCfg = false
+    }
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') showProxyCfg = false
+    }
+    document.addEventListener('pointerdown', onDown, true)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown, true)
+      document.removeEventListener('keydown', onKey)
+    }
+  })
+
+  const pillClass = $derived(
+    connecting ? 'pill connecting' : proxy.enabled ? 'pill on' : proxy.reason ? 'pill err' : 'pill'
+  )
   const pillText = $derived(
-    proxy.enabled ? `${proxy.host}:${proxy.port}` : proxy.reason ? 'error' : 'offline'
+    connecting
+      ? 'connecting…'
+      : proxy.enabled
+        ? `${proxy.host}:${proxy.port}`
+        : proxy.reason
+          ? 'error'
+          : 'offline'
   )
 </script>
 
@@ -99,42 +134,69 @@
 
   <div class="rule"></div>
 
-  <button
-    class={`seg ${proxy.enabled ? 'on' : ''}`}
-    aria-pressed={proxy.enabled}
-    title="Tunnel localhost to the remote machine over SSH (SOCKS5)"
-    onclick={onToggleProxy}
-  >
-    <span class="ico"><PlugsConnected /></span>
-    Dev Proxy
-  </button>
-  <button
-    class="btn-icon"
-    title="Proxy settings"
-    aria-label="Proxy settings"
-    onclick={() => (showProxyCfg = !showProxyCfg)}
-  >
-    <GearSix />
-  </button>
+  <div class="proxy-control" bind:this={proxyWrapEl}>
+    <button
+      class={`seg ${connecting ? 'busy' : proxy.enabled ? 'on' : ''}`}
+      aria-pressed={proxy.enabled}
+      aria-busy={connecting}
+      disabled={connecting}
+      title="Tunnel localhost to the remote machine over SSH (SOCKS5)"
+      onclick={onToggleProxy}
+    >
+      <span class={`ico ${connecting ? 'spin' : ''}`}>
+        {#if connecting}<SpinnerGap />{:else}<PlugsConnected />{/if}
+      </span>
+      Dev Proxy
+    </button>
+    <button
+      class={`cog ${showProxyCfg ? 'on' : ''}`}
+      title="Proxy settings"
+      aria-label="Proxy settings"
+      aria-expanded={showProxyCfg}
+      onclick={() => (showProxyCfg = !showProxyCfg)}
+    >
+      <GearSix />
+    </button>
+
+    {#if showProxyCfg}
+      <div class="popover" role="dialog" aria-label="Proxy settings">
+        <div class="pop-head">Dev Proxy</div>
+        <label class="pop-row">
+          <span>Host</span>
+          <input class="field addr" placeholder="ssh host or alias" bind:value={proxyHost} />
+        </label>
+        <label class="pop-row">
+          <span>SOCKS port</span>
+          <input class="field addr" type="number" bind:value={proxyPort} />
+        </label>
+        <label class="pop-row">
+          <span>Username</span>
+          <input class="field" placeholder="optional" autocomplete="off" bind:value={proxyUser} />
+        </label>
+        <label class="pop-row">
+          <span>Password</span>
+          <input
+            class="field"
+            type="password"
+            placeholder="optional"
+            autocomplete="off"
+            bind:value={proxyPassword}
+          />
+        </label>
+        <p class="pop-hint">
+          Uses your SSH keys by default. Set a password to authenticate with sshpass instead. This
+          is your login for the remote host, not the SOCKS port.
+        </p>
+        <p class="pop-hint">
+          {secureStore
+            ? 'Saved automatically. The password is encrypted in your system keychain.'
+            : 'Settings are saved, but no system keychain is available, so the password will not persist.'}
+        </p>
+      </div>
+    {/if}
+  </div>
   <span class={pillClass} title={proxy.reason ?? ''}>
     <span class="dot"></span>
     {pillText}
   </span>
-
-  {#if showProxyCfg}
-    <div class="rule"></div>
-    <label class="cfg">
-      host
-      <input class="field" style="width:128px;height:26px" bind:value={proxyHost} />
-    </label>
-    <label class="cfg">
-      port
-      <input
-        class="field addr"
-        style="width:64px;height:26px"
-        type="number"
-        bind:value={proxyPort}
-      />
-    </label>
-  {/if}
 </div>

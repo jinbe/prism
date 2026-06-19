@@ -9,6 +9,10 @@ const webviewPreloadUrl = pathToFileURL(join(__dirname, 'webview.js')).href
 export interface ProxyConfig {
   host: string
   port: number
+  /** Optional SSH username (else taken from ~/.ssh/config or the OS user). */
+  username?: string
+  /** Optional SSH password; routed through sshpass. Blank = key/agent auth. */
+  password?: string
 }
 
 export interface ProxyStatus {
@@ -23,6 +27,21 @@ export interface NetEventPayload {
   paneId: string
   type: 'request' | 'response' | 'finish' | 'fail'
   data: Record<string, unknown>
+}
+
+export interface ProxySettingsSave {
+  host: string
+  port: number
+  username: string
+  password: string
+}
+
+export interface ProxySettingsLoad {
+  host?: string
+  port?: number
+  username?: string
+  password?: string
+  secure: boolean
 }
 
 const api = {
@@ -53,6 +72,15 @@ const api = {
     const fn = (_e: unknown, ev: NetEventPayload): void => cb(ev)
     ipcRenderer.on('netinspect:event', fn)
     return () => ipcRenderer.removeListener('netinspect:event', fn)
+  },
+  settings: {
+    loadProxy: (): Promise<ProxySettingsLoad> => ipcRenderer.invoke('settings:loadProxy'),
+    saveProxy: (s: ProxySettingsSave): Promise<void> => ipcRenderer.invoke('settings:saveProxy', s)
+  },
+  /** Persisted, non-secret UI layout (panes, viewports, urls, toggles). */
+  uiState: {
+    load: (): Promise<unknown> => ipcRenderer.invoke('state:load'),
+    save: (s: unknown): Promise<void> => ipcRenderer.invoke('state:save', s)
   }
 }
 

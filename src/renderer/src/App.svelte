@@ -29,14 +29,34 @@
     }
   }
 
-  let panes = $state<PaneModel[]>([makePane('iphone-15'), makePane('desktop')])
+  function defaultPanes(): PaneModel[] {
+    return [makePane('iphone-15'), makePane('desktop')]
+  }
+
+  type SavedPane = Pick<PaneModel, 'device' | 'width' | 'height' | 'url' | 'currentUrl' | 'mirror'>
+  interface UiState {
+    panes?: SavedPane[]
+    globalUrl?: string
+    syncInteractions?: boolean
+    syncRoutes?: boolean
+    showNet?: boolean
+  }
+
+  // Panes start empty and are populated once persisted state loads, so we don't
+  // build (and immediately tear down) the default webviews on a restore.
+  let panes = $state<PaneModel[]>([])
+  let stateLoaded = $state(false)
+  let secureStore = $state(true)
   let globalUrl = $state('https://www.google.com')
   let syncInteractions = $state(true)
   let syncRoutes = $state(true)
 
   let proxy = $state<ProxyStatus>({ enabled: false })
+  let proxyConnecting = $state(false)
   let proxyHost = $state('dev-host')
   let proxyPort = $state(1080)
+  let proxyUser = $state('')
+  let proxyPassword = $state('')
 
   let showNet = $state(false)
   let netTick = $state(0)
@@ -51,6 +71,76 @@
   const paneCols = $derived(
     panes.map((p, i) => ({ id: p.id, label: `${presetByKey(p.device).label} ·${i + 1}` }))
   )
+
+  // Restore persisted UI layout + proxy settings once on startup.
+  $effect(() => {
+    void (async () => {
+      const [ui, ps] = await Promise.all([
+        window.api.uiState.load() as Promise<UiState | null>,
+        window.api.settings.loadProxy()
+      ])
+      panes =
+        ui?.panes && ui.panes.length > 0
+          ? ui.panes.map((p) => ({
+              id: `pane-${++paneSeq}`,
+              url: p.currentUrl ?? p.url,
+              currentUrl: p.currentUrl ?? p.url,
+              width: p.width,
+              height: p.height,
+              device: p.device,
+              mirror: p.mirror
+            }))
+          : defaultPanes()
+      if (ui?.globalUrl != null) globalUrl = ui.globalUrl
+      if (ui?.syncInteractions != null) syncInteractions = ui.syncInteractions
+      if (ui?.syncRoutes != null) syncRoutes = ui.syncRoutes
+      if (ui?.showNet != null) showNet = ui.showNet
+
+      if (ps.host != null) proxyHost = ps.host
+      if (ps.port != null) proxyPort = ps.port
+      if (ps.username != null) proxyUser = ps.username
+      if (ps.password != null) proxyPassword = ps.password
+      secureStore = ps.secure
+
+      stateLoaded = true
+    })()
+  })
+
+  // Persist UI layout (debounced) once the initial restore has happened.
+  let uiSaveTimer: ReturnType<typeof setTimeout> | undefined
+  $effect(() => {
+    const snapshot: UiState = {
+      panes: panes.map((p) => ({
+        device: p.device,
+        width: p.width,
+        height: p.height,
+        url: p.url,
+        currentUrl: p.currentUrl,
+        mirror: p.mirror
+      })),
+      globalUrl,
+      syncInteractions,
+      syncRoutes,
+      showNet
+    }
+    if (!stateLoaded) return
+    clearTimeout(uiSaveTimer)
+    uiSaveTimer = setTimeout(() => void window.api.uiState.save(snapshot), 400)
+  })
+
+  // Persist proxy settings (debounced); password goes to the OS keychain.
+  let proxySaveTimer: ReturnType<typeof setTimeout> | undefined
+  $effect(() => {
+    const snapshot = {
+      host: proxyHost,
+      port: proxyPort,
+      username: proxyUser.trim(),
+      password: proxyPassword
+    }
+    if (!stateLoaded) return
+    clearTimeout(proxySaveTimer)
+    proxySaveTimer = setTimeout(() => void window.api.settings.saveProxy(snapshot), 500)
+  })
 
   // Proxy status subscription (runs once).
   $effect(() => {
@@ -120,9 +210,22 @@
   }
 
   async function toggleProxy(): Promise<void> {
-    proxy = proxy.enabled
-      ? await window.api.devProxy.disable()
-      : await window.api.devProxy.enable({ host: proxyHost, port: proxyPort })
+    if (proxyConnecting) return
+    if (proxy.enabled) {
+      proxy = await window.api.devProxy.disable()
+      return
+    }
+    proxyConnecting = true
+    try {
+      proxy = await window.api.devProxy.enable({
+        host: proxyHost,
+        port: proxyPort,
+        username: proxyUser.trim() || undefined,
+        password: proxyPassword || undefined
+      })
+    } finally {
+      proxyConnecting = false
+    }
   }
 
   function clearNet(): void {
@@ -143,7 +246,11 @@
       bind:syncRoutes
       bind:proxyHost
       bind:proxyPort
+      bind:proxyUser
+      bind:proxyPassword
       {proxy}
+      connecting={proxyConnecting}
+      {secureStore}
       {showNet}
       onOpenAll={openAll}
       onAddPane={addPane}

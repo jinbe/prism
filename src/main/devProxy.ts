@@ -1,4 +1,4 @@
-import { spawn, ChildProcess } from 'child_process'
+import { spawn, spawnSync, ChildProcess } from 'child_process'
 import net from 'net'
 import { session, BrowserWindow } from 'electron'
 
@@ -7,6 +7,18 @@ export interface ProxyConfig {
   host: string
   /** Local SOCKS5 port the tunnel listens on, e.g. 1080. */
   port: number
+  /** Optional SSH username (else from ~/.ssh/config or the OS user). */
+  username?: string
+  /** Optional SSH password; fed to ssh via sshpass. Blank = key/agent auth. */
+  password?: string
+}
+
+function commandExists(cmd: string): boolean {
+  try {
+    return spawnSync('which', [cmd], { stdio: 'ignore' }).status === 0
+  } catch {
+    return false
+  }
 }
 
 export interface ProxyStatus {
@@ -71,54 +83,58 @@ async function clearProxy(partition: string): Promise<void> {
 }
 
 function stopChild(): void {
-  if (child) {
+  if (child?.pid) {
+    // Children are spawned detached (own process group) so we can take down the
+    // whole group — sshpass forks ssh, and killing only sshpass can orphan it.
     try {
-      child.kill()
+      process.kill(-child.pid)
     } catch {
-      /* ignore */
+      try {
+        child.kill()
+      } catch {
+        /* ignore */
+      }
     }
-    child = null
   }
+  child = null
 }
 
 function spawnTunnel(cfg: ProxyConfig): void {
-  // Prefer autossh (auto-reconnect) and fall back to plain ssh if it's missing.
-  const useAutossh = true
-  const cmd = useAutossh ? 'autossh' : 'ssh'
-  const args = useAutossh
-    ? [
-        '-M',
-        '0',
-        '-N',
-        '-C',
-        '-D',
-        String(cfg.port),
-        '-o',
-        'ServerAliveInterval=15',
-        '-o',
-        'ServerAliveCountMax=3',
-        '-o',
-        'ExitOnForwardFailure=yes',
-        '-o',
-        'TCPKeepAlive=yes',
-        cfg.host
-      ]
-    : [
-        '-N',
-        '-C',
-        '-D',
-        String(cfg.port),
-        '-o',
-        'ServerAliveInterval=15',
-        '-o',
-        'ExitOnForwardFailure=yes',
-        cfg.host
-      ]
+  const sshArgs = [
+    '-N',
+    '-C',
+    '-D',
+    String(cfg.port),
+    '-o',
+    'ServerAliveInterval=15',
+    '-o',
+    'ServerAliveCountMax=3',
+    '-o',
+    'ExitOnForwardFailure=yes',
+    '-o',
+    'TCPKeepAlive=yes'
+  ]
+  if (cfg.username) sshArgs.push('-l', cfg.username)
 
-  child = spawn(cmd, args, {
-    env: { ...process.env, AUTOSSH_GATETIME: '0' },
-    stdio: 'ignore'
-  })
+  let cmd: string
+  let args: string[]
+  const env: NodeJS.ProcessEnv = { ...process.env }
+
+  if (cfg.password) {
+    // sshpass feeds the SSH password non-interactively (there's no tty here).
+    // autossh + sshpass is unreliable, so use plain ssh in this path.
+    // accept-new avoids a host-key prompt that would otherwise hang silently.
+    cmd = 'sshpass'
+    args = ['-e', 'ssh', '-o', 'StrictHostKeyChecking=accept-new', ...sshArgs, cfg.host]
+    env.SSHPASS = cfg.password
+  } else {
+    // key/agent auth: prefer autossh for auto-reconnect.
+    cmd = 'autossh'
+    args = ['-M', '0', ...sshArgs, cfg.host]
+    env.AUTOSSH_GATETIME = '0'
+  }
+
+  child = spawn(cmd, args, { env, stdio: 'ignore', detached: true })
 
   child.on('error', (err) => {
     child = null
@@ -138,6 +154,16 @@ function spawnTunnel(cfg: ProxyConfig): void {
 export async function enable(cfg: ProxyConfig, partition: string): Promise<ProxyStatus> {
   current = cfg
 
+  if (cfg.password && !commandExists('sshpass')) {
+    const status: ProxyStatus = {
+      enabled: false,
+      reason: 'Password auth needs sshpass — install it with: brew install sshpass'
+    }
+    enabled = false
+    broadcast(status)
+    return status
+  }
+
   // Reuse a tunnel that's already up (e.g. one started by your chrome-dev script).
   const reused = await portOpen(cfg.port)
   if (!reused) {
@@ -148,7 +174,9 @@ export async function enable(cfg: ProxyConfig, partition: string): Promise<Proxy
       enabled = false
       const status: ProxyStatus = {
         enabled: false,
-        reason: `SSH tunnel did not open port ${cfg.port}. Is "${cfg.host}" reachable and is autossh installed?`
+        reason: cfg.password
+          ? `SSH tunnel did not open port ${cfg.port}. Check the password and that "${cfg.host}" is reachable.`
+          : `SSH tunnel did not open port ${cfg.port}. Is "${cfg.host}" reachable, keys set up (or set a password), and autossh installed?`
       }
       broadcast(status)
       return status

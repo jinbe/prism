@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, nativeImage, shell } from 'electron'
 import { join } from 'path'
 import * as devProxy from './devProxy'
 import * as netInspector from './netInspector'
+import * as settings from './settings'
 
 // All panes share one persistent session partition so cookies/storage are
 // shared — what you usually want for same-session A/B testing. The dev proxy
@@ -63,6 +64,11 @@ app.whenReady().then(() => {
   ipcMain.handle('netinspect:getBody', (_e, { paneId, requestId }) =>
     netInspector.getBody(paneId, requestId)
   )
+
+  ipcMain.handle('settings:loadProxy', () => settings.loadProxy())
+  ipcMain.handle('settings:saveProxy', (_e, s: settings.ProxySettingsSave) => settings.saveProxy(s))
+  ipcMain.handle('state:load', () => settings.loadUiState())
+  ipcMain.handle('state:save', (_e, s: unknown) => settings.saveUiState(s))
 
   createWindow()
 

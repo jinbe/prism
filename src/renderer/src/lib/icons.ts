@@ -17,5 +17,6 @@ export {
   Link, // pane is synced
   LinkBreak, // pane is detached from sync
   Equals, // bodies identical
-  ArrowLineRight // open in all panes
+  ArrowLineRight, // open in all panes
+  SpinnerGap // in-progress / connecting
 } from 'phosphor-svelte'
