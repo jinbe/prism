@@ -153,4 +153,4 @@ and need one approving review before merge.
 
 ## License
 
-[MIT](LICENSE) © Jin Chan
+[MIT](LICENSE) © Moravec Pty Ltd

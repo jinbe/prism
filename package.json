@@ -1,6 +1,6 @@
 {
   "name": "prism",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Prism — a developer browser: split panes, per-pane viewport control, interaction & route mirroring, a cross-pane network diff, and a built-in SSH dev proxy.",
   "main": "./out/main/index.js",
   "author": "Moravec",
@@ -95,6 +95,7 @@
     "@fontsource-variable/hanken-grotesk": "^5.2.8",
     "@fontsource-variable/spline-sans-mono": "^5.2.8",
     "@pierre/diffs": "^1.2.11",
+    "electron-updater": "^6.3.9",
     "phosphor-svelte": "^3.1.0",
     "pixelmatch": "^7.2.0"
   }

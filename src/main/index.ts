@@ -3,6 +3,7 @@ import { join } from 'path'
 import * as devProxy from './devProxy'
 import * as netInspector from './netInspector'
 import * as settings from './settings'
+import { initAutoUpdate } from './autoUpdate'
 
 // All panes share one persistent session partition so cookies/storage are
 // shared — what you usually want for same-session A/B testing. The dev proxy
@@ -71,6 +72,9 @@ app.whenReady().then(() => {
   ipcMain.handle('state:save', (_e, s: unknown) => settings.saveUiState(s))
 
   createWindow()
+
+  // Check for published updates (packaged builds only).
+  if (app.isPackaged) initAutoUpdate()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
