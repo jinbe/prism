@@ -60,9 +60,8 @@ These have bitten us before. Keep them in mind when touching the relevant areas:
 
 ## Pull requests
 
-- Branch off `main`; PRs target `main` and need one approving review before merge.
-  (This is the project policy; it will be enforced via branch protection once the
-  repo is public.)
+- Branch off `main`; PRs target `main` and need one approving review before merge
+  (enforced by branch protection).
 - Keep PRs focused; one logical change per PR where practical.
 - Write commit messages and PR descriptions that explain the _why_, not just the
   _what_.
