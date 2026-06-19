@@ -1,0 +1,332 @@
+:root {
+  --bg: #1e1e22;
+  --bg-2: #26262b;
+  --bg-3: #303036;
+  --border: #3a3a42;
+  --text: #e6e6ea;
+  --text-dim: #9a9aa6;
+  --accent: #6ea8fe;
+  --accent-dim: #3b5b8c;
+  --danger: #f06b6b;
+  --ok: #5fd28a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ----------------------------------------------------------- toolbar ----- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.toolbar .url-input {
+  flex: 1 1 280px;
+  min-width: 180px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.btn:hover {
+  border-color: var(--accent-dim);
+}
+.btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn.icon {
+  padding: 6px 9px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.toggle input {
+  accent-color: var(--accent);
+}
+
+.sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  margin: 0 2px;
+}
+
+.proxy-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.proxy-pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+.proxy-pill.on .dot {
+  background: var(--ok);
+}
+.proxy-pill.err .dot {
+  background: var(--danger);
+}
+
+/* -------------------------------------------------------------- panes ----- */
+.panes {
+  flex: 1;
+  display: flex;
+  gap: 1px;
+  overflow-x: auto;
+  /* allow children to shrink/scroll vertically instead of overflowing the window */
+  min-height: 0;
+  background: var(--border);
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 0;
+  background: var(--bg);
+}
+
+.pane-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+
+.pane-head select,
+.pane-head input {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 5px;
+  font-size: 11px;
+}
+.pane-head .dim {
+  color: var(--text-dim);
+}
+.dim-input {
+  width: 52px;
+}
+.pane-url {
+  flex: 1;
+  min-width: 60px;
+}
+
+.pane-stage {
+  flex: 1;
+  /* min-height:0 lets the stage shrink within the pane so it fills (not exceeds)
+     the window. Frames are scaled to fit, so no scrollbars are needed. */
+  min-height: 0;
+  overflow: hidden;
+  background: #111;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12px;
+}
+
+/* Reserves the scaled footprint so flex layout/centering stays correct while
+   the viewport inside is visually shrunk via transform. */
+.frame {
+  flex: none;
+  overflow: hidden;
+}
+
+.viewport {
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--border);
+  /* width/height are the device-space dimensions; a transform:scale() applied
+     inline shrinks it to fit. Scaling from the top-left keeps it pinned. */
+  transform-origin: top left;
+}
+
+/* display:flex is required — the webview's internal <iframe> is flex:1, so
+   without a flex host it collapses to Electron's default 150px height. */
+.viewport webview {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* ---------------------------------------------------- network panel ----- */
+.netpanel {
+  display: flex;
+  flex-direction: column;
+  height: 42%;
+  min-height: 160px;
+  border-top: 2px solid var(--border);
+  background: var(--bg-2);
+}
+
+.net-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.net-summary {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.net-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.net-table-wrap {
+  flex: 1;
+  overflow: auto;
+}
+
+.net-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.net-table th {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  background: var(--bg-3);
+  color: var(--text-dim);
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+  z-index: 1;
+}
+
+.net-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--bg-3);
+  white-space: nowrap;
+}
+
+.net-table tbody tr {
+  cursor: pointer;
+}
+.net-table tbody tr:hover {
+  background: var(--bg-3);
+}
+.net-table tr.diff {
+  background: rgba(240, 107, 107, 0.1);
+}
+.net-table tr.diff:hover {
+  background: rgba(240, 107, 107, 0.18);
+}
+
+.net-table .col-method {
+  width: 64px;
+  color: var(--accent);
+}
+.net-table .col-path {
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.net-table td.absent {
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+.bad {
+  color: var(--danger);
+}
+.center {
+  text-align: center;
+}
+
+/* ------------------------------------------------------- body diff ----- */
+.bodydiff {
+  display: flex;
+  flex-direction: column;
+  max-height: 60%;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.bodydiff-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.bodydiff-msg {
+  padding: 10px;
+}
+.bodydiff-body {
+  overflow: auto;
+}

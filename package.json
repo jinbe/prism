@@ -1,0 +1,52 @@
+{
+  "name": "prism",
+  "version": "0.1.0",
+  "description": "Prism — a developer browser: split panes, per-pane viewport control, interaction & route mirroring, a cross-pane network diff, and a built-in SSH dev proxy.",
+  "main": "./out/main/index.js",
+  "author": "Jin",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "build": "electron-vite build",
+    "build:mac": "electron-vite build && electron-builder --mac",
+    "build:win": "electron-vite build && electron-builder --win",
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "fallow": "fallow",
+    "analyze": "fallow",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,svelte,js,mjs,cjs,json,css,html}": "prettier --write"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.1.2",
+    "@types/node": "^20.14.0",
+    "electron": "^31.0.2",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "fallow": "^2.99.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.4",
+    "prettier-plugin-svelte": "^4.1.1",
+    "svelte": "^5.0.0",
+    "svelte-check": "^4.0.0",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.2",
+    "vite": "^5.3.1"
+  },
+  "build": {
+    "appId": "com.jin.prism",
+    "productName": "Prism",
+    "files": [
+      "out/**/*"
+    ]
+  },
+  "dependencies": {
+    "@pierre/diffs": "^1.2.11"
+  }
+}

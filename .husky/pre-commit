@@ -1,0 +1,8 @@
+# Format staged files (re-stages them automatically)
+npx lint-staged
+
+# Type gate — svelte-check covers .svelte and .ts
+npm run typecheck
+
+# Dead-code gate (base-independent; fast)
+npx fallow dead-code --quiet
