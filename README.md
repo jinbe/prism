@@ -117,7 +117,7 @@ CDP `Network.getResponseBody` and renders a syntax-highlighted diff.
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the
 type/build gates, and the hard-won gotchas to avoid regressing. PRs target `main`
-and require review before merge.
+and need one approving review before merge.
 
 ## License
 
