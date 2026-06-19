@@ -33,9 +33,10 @@ jobs:
           # Code signing: base64 of the Developer ID Application .p12 + its password.
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          # Notarization (consumed by build/notarize.cjs).
+          # Notarization (consumed by build/notarize.cjs). The Team ID isn't
+          # secret (it's embedded in every signed app), so it's inline here.
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_TEAM_ID: 7E2VA357ZD
           # electron-builder uses this to publish the draft GitHub Release.
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -27,13 +27,16 @@ Set these in **Settings → Secrets and variables → Actions**:
 | --- | --- | --- |
 | `CSC_LINK` | base64 of your *Developer ID Application* certificate (`.p12`) | export the cert from Keychain Access (with its private key) as `.p12`, then `base64 -i cert.p12 \| pbcopy` |
 | `CSC_KEY_PASSWORD` | the password you set on that `.p12` export | you choose it at export time |
-| `APPLE_ID` | your Apple ID email | your Apple Developer account |
+| `APPLE_ID` | the Apple ID email that's a member of the Moravec team | your Apple Developer account |
 | `APPLE_APP_SPECIFIC_PASSWORD` | an app-specific password for notarization | <https://appleid.apple.com> → Sign-In and Security → App-Specific Passwords |
-| `APPLE_TEAM_ID` | your 10-character Team ID | <https://developer.apple.com/account> → Membership |
 
-The certificate is a **Developer ID Application** cert (for distribution outside
-the App Store), created at developer.apple.com or via Xcode → Settings →
-Accounts → Manage Certificates.
+The Moravec **Team ID** (`7E2VA357ZD`) isn't secret, so it's set inline in the
+release workflow rather than as a secret.
+
+The certificate must be a **Developer ID Application** cert under the **Moravec**
+team (for distribution outside the App Store), created at developer.apple.com or
+via Xcode → Settings → Accounts → Manage Certificates. `CSC_LINK` and the Team ID
+must come from the same account.
 
 ## Building locally
 
@@ -49,7 +52,7 @@ your login Keychain and export the notarization vars before running:
 ```bash
 export APPLE_ID="you@example.com"
 export APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"
-export APPLE_TEAM_ID="XXXXXXXXXX"
+export APPLE_TEAM_ID="7E2VA357ZD"
 pnpm run build:mac
 ```
 
