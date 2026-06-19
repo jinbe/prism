@@ -60,6 +60,8 @@ export interface PaneHandle {
   goBack: () => void
   goForward: () => void
   devtools: () => void
+  /** Snapshot the pane's current view as a PNG data URL (for the visual diff). */
+  capture: () => Promise<string | null>
 }
 
 export function normalizeUrl(input: string): string {

@@ -123,6 +123,14 @@
         } catch {
           /* ignore */
         }
+      },
+      capture: async () => {
+        try {
+          const img = await el.capturePage()
+          return img.toDataURL()
+        } catch {
+          return null
+        }
       }
     })
 

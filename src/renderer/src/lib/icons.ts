@@ -18,5 +18,9 @@ export {
   LinkBreak, // pane is detached from sync
   Equals, // bodies identical
   ArrowLineRight, // open in all panes
-  SpinnerGap // in-progress / connecting
+  SpinnerGap, // in-progress / connecting
+  SidebarSimple, // toggle the workspace rail
+  Intersect, // visual diff (merge two panes)
+  Stack, // a workspace / project
+  Trash // remove workspace
 } from 'phosphor-svelte'

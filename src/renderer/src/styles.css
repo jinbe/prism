@@ -632,6 +632,232 @@ body,
   border: 0;
 }
 
+/* ============================================================ layout ===== */
+.body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.stack {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.hidden {
+  display: none !important;
+}
+
+/* ==================================================== workspace rail ===== */
+.rail {
+  flex: none;
+  width: 188px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+}
+.rail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-xs) var(--space-xs) var(--space-2xs) var(--space-sm);
+}
+.rail-title {
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.btn-icon.sm {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+}
+.rail-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rail-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+}
+.rail-item:hover {
+  background: var(--surface-2);
+}
+.rail-item.on {
+  background: var(--accent-soft);
+}
+.rail-pick {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  text-align: left;
+}
+.rail-item.on .rail-pick {
+  color: var(--text);
+}
+.rail-ico {
+  display: inline-flex;
+  font-size: 15px;
+  color: var(--text-faint);
+}
+.rail-item.on .rail-ico {
+  color: var(--accent);
+}
+.rail-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.rail-edit {
+  flex: 1;
+  min-width: 0;
+  height: 20px;
+  padding: 0 4px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-xs);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.rail-edit:focus {
+  outline: none;
+}
+.rail-x {
+  position: absolute;
+  right: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0;
+  transition:
+    opacity var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.rail-item:hover .rail-x {
+  opacity: 1;
+}
+.rail-x:hover {
+  color: var(--diff);
+  background: var(--surface-3);
+}
+.rail-add {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: var(--space-xs);
+  padding: 8px 10px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  transition:
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.rail-add:hover {
+  border-color: var(--accent-line);
+  color: var(--text);
+}
+
+/* ======================================================= visual diff ===== */
+.seg.sm {
+  height: 26px;
+  padding: 0 9px;
+  font-size: var(--text-xs);
+}
+.seg-row {
+  display: inline-flex;
+  gap: 4px;
+}
+.vdiff {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+.vdiff-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-2xs) var(--space-sm);
+  border-bottom: 1px solid var(--line);
+  min-height: 40px;
+}
+.vdiff-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-md);
+  background: light-dark(oklch(0.9 0.008 80), oklch(0.12 0.006 70));
+}
+.vdiff-canvas {
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 0 0 1px var(--line-2);
+  background: #fff;
+}
+.vdiff-msg {
+  margin: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+.live-dot.on {
+  background: var(--accent);
+  animation: pulse-dot 1.1s var(--ease) infinite;
+}
+
 /* ===================================================== network panel ===== */
 .netpanel {
   display: flex;

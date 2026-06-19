@@ -8,7 +8,9 @@
     Pulse,
     PlugsConnected,
     GearSix,
-    SpinnerGap
+    SpinnerGap,
+    SidebarSimple,
+    Intersect
   } from '../lib/icons'
 
   interface Props {
@@ -23,6 +25,10 @@
     connecting: boolean
     secureStore: boolean
     showNet: boolean
+    sidebarOpen: boolean
+    canDiff: boolean
+    onToggleSidebar: () => void
+    onOpenDiff: () => void
     onOpenAll: () => void
     onAddPane: () => void
     onToggleProxy: () => void
@@ -41,6 +47,10 @@
     connecting,
     secureStore,
     showNet,
+    sidebarOpen,
+    canDiff,
+    onToggleSidebar,
+    onOpenDiff,
     onOpenAll,
     onAddPane,
     onToggleProxy,
@@ -82,6 +92,16 @@
 </script>
 
 <div class="topbar">
+  <button
+    class={`btn-icon ${sidebarOpen ? 'on' : ''}`}
+    title="Toggle projects"
+    aria-label="Toggle projects"
+    aria-pressed={sidebarOpen}
+    onclick={onToggleSidebar}
+  >
+    <SidebarSimple />
+  </button>
+
   <span class="wordmark">PRIS<b>M</b></span>
 
   <button class="btn-icon" title="Add pane" aria-label="Add pane" onclick={onAddPane}>
@@ -121,6 +141,17 @@
   </button>
 
   <div class="bar-spacer"></div>
+
+  {#if canDiff}
+    <button
+      class="seg"
+      title="Merge both panes into a highlighted visual diff"
+      onclick={onOpenDiff}
+    >
+      <span class="ico"><Intersect /></span>
+      Visual diff
+    </button>
+  {/if}
 
   <button
     class={`seg ${showNet ? 'on' : ''}`}

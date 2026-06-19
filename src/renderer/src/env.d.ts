@@ -21,6 +21,7 @@ declare global {
     openDevTools(): void
     getURL(): string
     getWebContentsId(): number
+    capturePage(): Promise<{ toDataURL(): string; getSize(): { width: number; height: number } }>
   }
 }
 

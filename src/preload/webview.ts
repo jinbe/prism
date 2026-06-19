@@ -35,15 +35,38 @@ function emit(type: PaneEvent['type'], data: Record<string, unknown>): void {
 
 // ---------------------------------------------------------------- capture ----
 
+// Scroll mirroring is the jittery one. Two fixes:
+//  - Coalesce capture to one emit per animation frame (raw scroll fires far
+//    faster than 60Hz and floods IPC / the other panes).
+//  - Guard echoes by POSITION, not time: a programmatic scrollTo (from a replay)
+//    fires its own async scroll event, which used to slip past the time-based
+//    suppress and feed back, so the panes fought each other. We remember the
+//    ratio we last applied and skip re-emitting when we're still sitting on it.
+let scrollRaf = 0
+let lastAppliedX = -1
+let lastAppliedY = -1
+
 window.addEventListener(
   'scroll',
   () => {
-    const doc = document.documentElement
-    const maxX = Math.max(1, doc.scrollWidth - window.innerWidth)
-    const maxY = Math.max(1, doc.scrollHeight - window.innerHeight)
-    // Send ratios, not pixels, so scroll maps correctly across different
-    // viewport sizes (mobile vs desktop).
-    emit('scroll', { rx: window.scrollX / maxX, ry: window.scrollY / maxY })
+    if (scrollRaf) return
+    scrollRaf = requestAnimationFrame(() => {
+      scrollRaf = 0
+      // Still resting where a replay put us: this is the echo, drop it. Compare
+      // in pixels (not ratios) so the guard holds on short/narrow pages too,
+      // where a ratio epsilon would be larger than a whole pixel.
+      if (
+        Math.abs(window.scrollX - lastAppliedX) <= 1 &&
+        Math.abs(window.scrollY - lastAppliedY) <= 1
+      )
+        return
+      const doc = document.documentElement
+      const maxX = Math.max(1, doc.scrollWidth - window.innerWidth)
+      const maxY = Math.max(1, doc.scrollHeight - window.innerHeight)
+      // Send ratios, not pixels, so scroll maps correctly across different
+      // viewport sizes (mobile vs desktop).
+      emit('scroll', { rx: window.scrollX / maxX, ry: window.scrollY / maxY })
+    })
   },
   { passive: true, capture: true }
 )
@@ -89,19 +112,30 @@ window.addEventListener(
 // ----------------------------------------------------------------- replay ----
 
 ipcRenderer.on('replay-event', (_evt, msg: PaneEvent) => {
+  // Scroll uses the position guard (above), not the time-based suppress, because
+  // scrollTo's echo event fires async and would outlive the suppress window.
+  if (msg.type === 'scroll') {
+    applyScroll(msg)
+    return
+  }
   withSuppress(() => applyEvent(msg))
 })
+
+function applyScroll(msg: PaneEvent): void {
+  const d = msg.data
+  const doc = document.documentElement
+  const maxX = Math.max(1, doc.scrollWidth - window.innerWidth)
+  const maxY = Math.max(1, doc.scrollHeight - window.innerHeight)
+  window.scrollTo({ left: (d.rx as number) * maxX, top: (d.ry as number) * maxY })
+  // scrollTo updates scrollX/Y synchronously; record the landed pixel position
+  // so the async echo scroll event it triggers is recognised and dropped.
+  lastAppliedX = window.scrollX
+  lastAppliedY = window.scrollY
+}
 
 function applyEvent(msg: PaneEvent): void {
   const d = msg.data
   switch (msg.type) {
-    case 'scroll': {
-      const doc = document.documentElement
-      const maxX = Math.max(1, doc.scrollWidth - window.innerWidth)
-      const maxY = Math.max(1, doc.scrollHeight - window.innerHeight)
-      window.scrollTo({ left: (d.rx as number) * maxX, top: (d.ry as number) * maxY })
-      break
-    }
     case 'click': {
       // Prefer the selector (robust across responsive layouts); fall back to the
       // element at the normalized coordinates.
