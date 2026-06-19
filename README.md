@@ -1,42 +1,48 @@
 # Prism
 
-A developer browser built on Electron (real Chromium per pane) with a Svelte UI.
-One set of interactions, fanned out across many viewports — built for side-by-side
-A/B and responsive testing.
+A developer browser for side-by-side A/B and responsive testing. Real Chromium in
+every pane (it's Electron), Svelte 5 on top. Drive one pane and the interactions
+mirror across the rest.
 
-- **Split panes** — any number of Chromium views side by side.
-- **Per-pane viewport control** — device presets (iPhone, iPad, Pixel, laptop,
+## What it does
+
+- **Split panes**: any number of Chromium views side by side.
+- **Per-pane viewport control**: device presets (iPhone, iPad, Pixel, laptop,
   desktop) or custom width × height, with mobile user-agent emulation.
-- **Mirror interactions** — clicks, scrolling, and typing in one pane are replayed
+- **Mirror interactions**: clicks, scrolling, and typing in one pane are replayed
   in the other "synced" panes. Scroll mirrors by ratio and clicks by CSS selector
-  (with normalized-coordinate fallback), so it holds up even when mobile and
+  (with a normalised-coordinate fallback), so it holds up even when mobile and
   desktop layouts differ.
-- **Mirror routes** — when one pane navigates, the others follow to the same URL.
+- **Mirror routes**: when one pane navigates, the others follow to the same URL.
   For comparing mobile vs desktop where interactions aren't 1:1.
-- **Per-pane DevTools** — the built-in Chrome DevTools, one button per pane.
-- **Cross-pane network diff** — the thing stock DevTools can't do: a merged request
-  table across all panes, highlighting where they disagree (a request one pane made
-  and another didn't, or different status codes). Click a shared request to **diff
-  its response body** side by side (syntax-highlighted, via `@pierre/diffs`).
-- **Built-in Dev Proxy** — a toggle that tunnels `localhost` to another machine over
-  SSH (SOCKS5). This is your `chrome-dev` script, built in.
+- **Per-pane DevTools**: the built-in Chrome DevTools, one button per pane.
+- **Cross-pane network diff**: a merged request table across all panes, flagging
+  where they disagree (a request one pane made and another didn't, or different
+  status codes). Stock DevTools can't do this because each pane is a separate page.
+  Click a shared request to diff the response bodies side by side
+  (syntax-highlighted, via `@pierre/diffs`).
+- **Built-in Dev Proxy**: a toggle that tunnels `localhost` to another machine over
+  SSH (SOCKS5). My `chrome-dev` script, built in.
 
 ## Run it
 
-Requires Node 18+ and pnpm.
+Prereqs: Node 18+ and pnpm.
 
 ```bash
 pnpm install
 pnpm run dev      # launches the app with hot reload
 ```
 
-Build distributables:
+Build:
 
 ```bash
 pnpm run build        # compile main/preload/renderer into out/
 pnpm run build:mac    # package a .app/.dmg (also :win, :linux)
 pnpm run typecheck    # svelte-check
 ```
+
+Run `pnpm run build` and `pnpm run typecheck` before you push; both should be
+clean. `svelte-check` is the type gate (the Vite build doesn't typecheck `.ts`).
 
 ## Dev Proxy
 
@@ -130,12 +136,11 @@ CDP `Network.getResponseBody` and renders a syntax-highlighted diff.
 
 ## Ideas / next steps
 
-- Per-pane proxy (separate partitions) — compare local-direct vs proxied-remote
+- Per-pane proxy (separate partitions) to compare local-direct vs proxied-remote
   in adjacent panes.
 - Deeper device emulation via CDP `Emulation.setDeviceMetricsOverride`
   (device-pixel-ratio, touch).
 - Header diffing in the body-diff view; "clear on navigate" for the network table.
-- Persist layout/presets across restarts.
 
 ## Contributing
 
