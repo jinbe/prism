@@ -157,7 +157,8 @@ export async function enable(cfg: ProxyConfig, partition: string): Promise<Proxy
   if (cfg.password && !commandExists('sshpass')) {
     const status: ProxyStatus = {
       enabled: false,
-      reason: 'Password auth needs sshpass — install it with: brew install sshpass'
+      reason:
+        'Password auth needs sshpass. macOS: brew install hudochenkov/sshpass/sshpass. Linux: apt/dnf/pacman install sshpass.'
     }
     enabled = false
     broadcast(status)

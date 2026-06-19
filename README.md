@@ -38,27 +38,51 @@ pnpm run build:mac    # package a .app/.dmg (also :win, :linux)
 pnpm run typecheck    # svelte-check
 ```
 
-## Dev Proxy — how it maps to `chrome-dev`
+## Dev Proxy
 
-Your original script opened a SOCKS5 tunnel with `autossh -D 1080 dev-host`
-and launched Chrome with `--proxy-server=socks5://localhost:1080` and
-`--proxy-bypass-list="<-loopback>"`. The `<-loopback>` part removes Chromium's
-built-in "don't proxy localhost" rule, so `localhost` is resolved on the remote
-machine.
+A `chrome-dev`-style SOCKS5 tunnel, built in (`src/main/devProxy.ts`):
 
-The **Dev Proxy** toggle reproduces that exactly (`src/main/devProxy.ts`):
+1. If the SOCKS port isn't already open, it spawns
+   `autossh -M 0 -N -C -D <port> … <host>`, so an existing tunnel (including one
+   started by your own shell script) is reused.
+2. It points the shared pane session at `socks5://127.0.0.1:<port>` with
+   `proxyBypassRules: "<-loopback>"`. The `<-loopback>` rule removes Chromium's
+   built-in "don't proxy localhost" behaviour, so `localhost` resolves on the
+   remote host.
 
-1. If port `1080` isn't already open, it spawns
-   `autossh -M 0 -N -C -D 1080 … <host>` (so an existing tunnel — including one
-   started by your shell script — is reused).
-2. It applies the proxy to the shared pane session:
-   `proxyRules: "socks5://127.0.0.1:1080"`, `proxyBypassRules: "<-loopback>"`.
+Open the settings cog on the **Dev Proxy** chip to set host, SOCKS port, and an
+optional username/password. Defaults: host `dev-host`, port `1080`. Settings
+persist between launches; the password is kept in your OS secret store (Keychain
+on macOS, DPAPI on Windows, libsecret on Linux) via Electron `safeStorage`, not in
+plain text. Turning the proxy off clears it and kills any tunnel this app started
+(an externally-started one is left alone). The status pill is green when active,
+red with a reason on failure.
 
-Host and port are configurable in the toolbar (⚙). Default host is
-`dev-host`, port `1080`. Turning it off clears the proxy and kills any tunnel
-this app started (an externally-started one is left alone). The pill turns green
-when active, red with a reason if the tunnel fails (e.g. host unreachable or
-`autossh` not installed — `brew install autossh`).
+### Auth
+
+By default the tunnel authenticates the way `ssh` already does on your machine:
+keys / `ssh-agent` and `~/.ssh/config`. Prism spawns `ssh` without a terminal, so
+it can't answer an interactive password prompt; if your host needs a password,
+enter it in the proxy settings and Prism feeds it via `sshpass`. Leave the
+password blank to use keys.
+
+### Requirements
+
+The proxy shells out to standard SSH tooling:
+
+| tool | needed for | install |
+| --- | --- | --- |
+| `ssh` | always | preinstalled on macOS/Linux; OpenSSH client ships with Windows 10+ |
+| `autossh` | key-based tunnels (auto-reconnect) | macOS `brew install autossh`; Debian/Ubuntu `apt install autossh`; Fedora `dnf install autossh`; Arch `pacman -S autossh` |
+| `sshpass` | password auth only | macOS `brew install hudochenkov/sshpass/sshpass`; Debian/Ubuntu `apt install sshpass`; Fedora `dnf install sshpass`; Arch `pacman -S sshpass` |
+
+If `sshpass` is missing when you set a password, the status pill explains how to
+install it.
+
+**Windows:** neither `autossh` nor `sshpass` is packaged natively, so the Dev
+Proxy is really a macOS/Linux feature. On Windows, run it under WSL, or start the
+SSH tunnel yourself (the Windows OpenSSH `ssh -D <port> <host>`) and Prism will
+reuse it on that port.
 
 ## Architecture
 
