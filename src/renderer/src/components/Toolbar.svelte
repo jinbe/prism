@@ -7,7 +7,7 @@
     Path,
     Pulse,
     PlugsConnected,
-    GearSix,
+    CaretDown,
     SpinnerGap,
     SidebarSimple,
     Intersect
@@ -122,52 +122,55 @@
   <div class="rule"></div>
 
   <button
-    class={`seg ${syncInteractions ? 'on' : ''}`}
+    class={`seg hint ${syncInteractions ? 'on' : ''}`}
     aria-pressed={syncInteractions}
     title="Replay clicks, scroll, and typing across synced panes"
     onclick={() => (syncInteractions = !syncInteractions)}
   >
     <span class="ico"><CursorClick /></span>
-    Interactions
+    <span class="seg-label"><span>Interactions</span></span>
   </button>
   <button
-    class={`seg ${syncRoutes ? 'on' : ''}`}
+    class={`seg hint ${syncRoutes ? 'on' : ''}`}
     aria-pressed={syncRoutes}
     title="When one pane navigates, send the others to the same path"
     onclick={() => (syncRoutes = !syncRoutes)}
   >
     <span class="ico"><Path /></span>
-    Routes
+    <span class="seg-label"><span>Routes</span></span>
   </button>
 
   <div class="bar-spacer"></div>
 
   {#if canDiff}
     <button
-      class="seg"
+      class="seg hint"
       title="Merge both panes into a highlighted visual diff"
       onclick={onOpenDiff}
     >
       <span class="ico"><Intersect /></span>
-      Visual diff
+      <span class="seg-label"><span>Visual diff</span></span>
     </button>
   {/if}
 
   <button
-    class={`seg ${showNet ? 'on' : ''}`}
+    class={`seg hint ${showNet ? 'on' : ''}`}
     title="Cross-pane network diff"
     aria-pressed={showNet}
     onclick={onToggleNet}
   >
     <span class="ico"><Pulse /></span>
-    Network
+    <span class="seg-label"><span>Network</span></span>
   </button>
 
   <div class="rule"></div>
 
-  <div class="proxy-control" bind:this={proxyWrapEl}>
+  <div
+    class={`proxy-control ${connecting ? 'busy' : proxy.enabled ? 'on' : ''}`}
+    bind:this={proxyWrapEl}
+  >
     <button
-      class={`seg ${connecting ? 'busy' : proxy.enabled ? 'on' : ''}`}
+      class="proxy-toggle"
       aria-pressed={proxy.enabled}
       aria-busy={connecting}
       disabled={connecting}
@@ -177,16 +180,16 @@
       <span class={`ico ${connecting ? 'spin' : ''}`}>
         {#if connecting}<SpinnerGap />{:else}<PlugsConnected />{/if}
       </span>
-      Dev Proxy
+      <span class="seg-label"><span>Dev Proxy</span></span>
     </button>
     <button
-      class={`cog ${showProxyCfg ? 'on' : ''}`}
+      class={`proxy-menu ${showProxyCfg ? 'open' : ''}`}
       title="Proxy settings"
       aria-label="Proxy settings"
       aria-expanded={showProxyCfg}
       onclick={() => (showProxyCfg = !showProxyCfg)}
     >
-      <GearSix />
+      <CaretDown />
     </button>
 
     {#if showProxyCfg}
@@ -223,6 +226,11 @@
             ? 'Saved automatically. The password is encrypted in your system keychain.'
             : 'Settings are saved, but no system keychain is available, so the password will not persist.'}
         </p>
+        <div class="pop-foot">
+          <button class="btn btn-primary" onclick={() => (showProxyCfg = false)}
+            >Save & close</button
+          >
+        </div>
       </div>
     {/if}
   </div>

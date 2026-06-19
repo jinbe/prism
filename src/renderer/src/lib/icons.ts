@@ -6,10 +6,10 @@ export {
   Plus, // add pane
   CaretLeft, // nav back
   CaretRight, // nav forward
+  CaretDown, // dropdown / select trigger
   ArrowClockwise, // reload
   X, // close / remove
   Code, // pane devtools
-  GearSix, // proxy settings
   Pulse, // network inspector
   CursorClick, // mirror interactions
   Path, // mirror routes

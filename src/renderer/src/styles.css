@@ -172,8 +172,10 @@ body,
 }
 
 .url-command {
-  flex: 1 1 320px;
-  min-width: 180px;
+  /* grow:0 so the right-hand bar-spacer (not this field) absorbs the chip
+     hover-expansion; that keeps "Open in all" and the left cluster from shifting. */
+  flex: 0 1 clamp(260px, 34vw, 560px);
+  min-width: 200px;
 }
 
 .btn {
@@ -291,6 +293,42 @@ body,
   color: var(--accent);
 }
 
+/* Collapsible label: icon-only by default, label reveals on hover/focus. Uses a
+   grid-template-columns transition (0fr -> 1fr) so it animates smoothly without
+   animating raw width. The inner span clips the text while collapsed. */
+.seg.hint {
+  gap: 0;
+}
+.seg-label {
+  display: grid;
+  grid-template-columns: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-columns 220ms var(--ease),
+    opacity 150ms var(--ease);
+}
+.seg-label > span {
+  overflow: hidden;
+  white-space: nowrap;
+  /* No padding while collapsed, otherwise it leaves a sliver of width (and a
+     trailing gap) on the icon-only chip. The icon/label gap is added on reveal. */
+  padding-left: 0;
+  transition: padding-left 220ms var(--ease);
+}
+.seg.hint:hover .seg-label,
+.seg.hint:focus-visible .seg-label,
+.proxy-control:hover .seg-label,
+.proxy-toggle:focus-visible .seg-label {
+  grid-template-columns: 1fr;
+  opacity: 1;
+}
+.seg.hint:hover .seg-label > span,
+.seg.hint:focus-visible .seg-label > span,
+.proxy-control:hover .seg-label > span,
+.proxy-toggle:focus-visible .seg-label > span {
+  padding-left: 7px;
+}
+
 /* spinner used while a tunnel is connecting */
 .spin {
   animation: spin 0.8s linear infinite;
@@ -358,39 +396,90 @@ body,
 }
 
 /* proxy control: toggle chip with a settings cog badge on its corner */
+/* Dev Proxy as a split "select" button: toggle on the left, dropdown caret on
+   the right that opens the settings popover. */
 .proxy-control {
   position: relative;
   display: inline-flex;
-  -webkit-app-region: no-drag;
-}
-.proxy-control .cog {
-  position: absolute;
-  bottom: -7px;
-  right: -7px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 19px;
-  height: 19px;
-  border-radius: 50%;
+  align-items: stretch;
+  height: 30px;
   border: 1px solid var(--line-2);
-  background: var(--surface-3);
-  color: var(--text-dim);
-  cursor: pointer;
-  font-size: 11px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  -webkit-app-region: no-drag;
   transition:
-    color var(--dur) var(--ease),
     border-color var(--dur) var(--ease),
     background var(--dur) var(--ease);
 }
-.proxy-control .cog:hover {
-  color: var(--text);
+.proxy-control.on {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+.proxy-control.busy {
   border-color: var(--accent-line);
 }
-.proxy-control .cog.on {
-  color: var(--accent-ink);
-  background: var(--accent);
-  border-color: transparent;
+.proxy-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+.proxy-toggle:disabled {
+  cursor: progress;
+}
+.proxy-toggle .ico {
+  display: inline-flex;
+  font-size: 16px;
+  color: var(--text-faint);
+  transition: color var(--dur) var(--ease);
+}
+.proxy-control.on .proxy-toggle,
+.proxy-control.busy .proxy-toggle {
+  color: var(--text);
+}
+.proxy-control.on .proxy-toggle .ico,
+.proxy-control.busy .proxy-toggle .ico {
+  color: var(--accent);
+}
+.proxy-menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  transition: color var(--dur) var(--ease);
+}
+.proxy-menu:hover {
+  color: var(--text);
+}
+.proxy-menu svg {
+  transition: transform 200ms var(--ease);
+}
+.proxy-menu.open {
+  color: var(--accent);
+}
+.proxy-menu.open svg {
+  transform: rotate(180deg);
+}
+
+.pop-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-2xs);
 }
 
 .popover {
