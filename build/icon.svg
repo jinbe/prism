@@ -1,0 +1,49 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tile" x1="512" y1="100" x2="512" y2="924" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#241f17"/>
+      <stop offset="1" stop-color="#171309"/>
+    </linearGradient>
+    <radialGradient id="depth" cx="430" cy="500" r="540" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.28"/>
+    </radialGradient>
+    <clipPath id="tileClip">
+      <rect x="100" y="100" width="824" height="824" rx="185"/>
+    </clipPath>
+  </defs>
+
+  <!-- machined tile -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#tile)"/>
+
+  <g clip-path="url(#tileClip)">
+    <rect x="100" y="100" width="824" height="824" fill="url(#depth)"/>
+
+    <!-- refracted spectrum: the single burst of colour = the product itself -->
+    <g stroke-linecap="round" fill="none" opacity="0.94">
+      <path d="M520 500 L876 372" stroke="#f4d28a" stroke-width="24"/>
+      <path d="M520 500 L876 436" stroke="#edc063" stroke-width="24"/>
+      <path d="M520 500 L876 500" stroke="#e0973f" stroke-width="24"/>
+      <path d="M520 500 L876 566" stroke="#d06a3c" stroke-width="24"/>
+      <path d="M520 500 L876 632" stroke="#c2474c" stroke-width="24"/>
+    </g>
+
+    <!-- incoming beam -->
+    <path d="M150 482 L350 482" stroke="#f3ead6" stroke-width="13" stroke-linecap="round" opacity="0.85"/>
+
+    <!-- prism glass: two faces for crafted dimension -->
+    <polygon points="430,344 250,656 430,656" fill="#f5ecd8" fill-opacity="0.13"/>
+    <polygon points="430,344 610,656 430,656" fill="#c49652" fill-opacity="0.12"/>
+    <polygon points="430,344 250,656 610,656" fill="#e8ce9e" fill-opacity="0.05"/>
+
+    <!-- internal beam crossing the glass -->
+    <path d="M350 482 L520 500" stroke="#f3ead6" stroke-width="9" stroke-linecap="round" opacity="0.55"/>
+
+    <!-- engraved edges -->
+    <line x1="430" y1="344" x2="430" y2="656" stroke="#d9b06a" stroke-width="2.5" opacity="0.45"/>
+    <polygon points="430,344 250,656 610,656" fill="none" stroke="#dcb677" stroke-width="6" stroke-linejoin="round"/>
+
+    <!-- machined bezel rim -->
+    <rect x="103" y="103" width="818" height="818" rx="182" fill="none" stroke="#d9b06a" stroke-width="2" opacity="0.16"/>
+  </g>
+</svg>

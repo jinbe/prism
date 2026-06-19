@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, nativeImage } from 'electron'
 import { join } from 'path'
 import * as devProxy from './devProxy'
 import * as netInspector from './netInspector'
@@ -13,7 +13,7 @@ function createWindow(): void {
     width: 1400,
     height: 900,
     show: false,
-    title: 'Dev Browser',
+    title: 'Prism',
     backgroundColor: '#1e1e22',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -39,6 +39,13 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  // In a packaged build the dock/taskbar icon comes from the app bundle. In dev
+  // there is no bundle, so set the macOS dock icon at runtime from the source PNG.
+  if (process.platform === 'darwin' && !app.isPackaged) {
+    const img = nativeImage.createFromPath(join(__dirname, '../../build/icon.png'))
+    if (!img.isEmpty()) app.dock?.setIcon(img)
+  }
+
   ipcMain.handle('devproxy:enable', (_e, cfg: devProxy.ProxyConfig) =>
     devProxy.enable(cfg, PANE_PARTITION)
   )

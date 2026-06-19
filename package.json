@@ -44,7 +44,16 @@
     "productName": "Prism",
     "files": [
       "out/**/*"
-    ]
+    ],
+    "mac": {
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "icon": "build/icon.png"
+    }
   },
   "dependencies": {
     "@pierre/diffs": "^1.2.11"
