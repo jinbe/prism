@@ -13,6 +13,40 @@ export interface ProxyConfig {
   password?: string
 }
 
+// Packaged macOS/Linux apps launched from Finder/Dock inherit a bare PATH
+// (/usr/bin:/bin:/usr/sbin:/sbin) — NOT the shell's. So binaries installed by
+// Homebrew (/opt/homebrew/bin, /usr/local/bin) like autossh/sshpass aren't
+// found, even though they work in `pnpm run dev` (terminal PATH). Resolve the
+// login shell's real PATH once and merge it in. This runs only when packaged.
+let pathFixed = false
+function ensurePath(): void {
+  if (pathFixed) return
+  pathFixed = true
+  if (process.platform === 'win32') return
+
+  const extra: string[] = []
+  try {
+    const shell = process.env.SHELL || '/bin/zsh'
+    // Login + interactive so the user's profile (where Homebrew sets PATH) loads.
+    const out = spawnSync(shell, ['-ilc', 'printf %s "$PATH"'], {
+      encoding: 'utf8',
+      timeout: 5000
+    })
+    if (out.status === 0 && out.stdout) extra.push(...out.stdout.trim().split(':'))
+  } catch {
+    /* fall back to the static dirs below */
+  }
+  extra.push('/opt/homebrew/bin', '/opt/homebrew/sbin', '/usr/local/bin', '/usr/local/sbin')
+
+  const seen = new Set<string>()
+  const merged = [...(process.env.PATH || '').split(':'), ...extra].filter((p) => {
+    if (!p || seen.has(p)) return false
+    seen.add(p)
+    return true
+  })
+  process.env.PATH = merged.join(':')
+}
+
 function commandExists(cmd: string): boolean {
   try {
     return spawnSync('which', [cmd], { stdio: 'ignore' }).status === 0
@@ -127,11 +161,15 @@ function spawnTunnel(cfg: ProxyConfig): void {
     cmd = 'sshpass'
     args = ['-e', 'ssh', '-o', 'StrictHostKeyChecking=accept-new', ...sshArgs, cfg.host]
     env.SSHPASS = cfg.password
-  } else {
+  } else if (commandExists('autossh')) {
     // key/agent auth: prefer autossh for auto-reconnect.
     cmd = 'autossh'
     args = ['-M', '0', ...sshArgs, cfg.host]
     env.AUTOSSH_GATETIME = '0'
+  } else {
+    // autossh not installed: plain ssh still works (no auto-reconnect).
+    cmd = 'ssh'
+    args = [...sshArgs, cfg.host]
   }
 
   child = spawn(cmd, args, { env, stdio: 'ignore', detached: true })
@@ -153,6 +191,7 @@ function spawnTunnel(cfg: ProxyConfig): void {
 
 export async function enable(cfg: ProxyConfig, partition: string): Promise<ProxyStatus> {
   current = cfg
+  ensurePath()
 
   if (cfg.password && !commandExists('sshpass')) {
     const status: ProxyStatus = {
