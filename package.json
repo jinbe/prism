@@ -1,6 +1,6 @@
 {
   "name": "prism",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Prism — a developer browser: split panes, per-pane viewport control, interaction & route mirroring, a cross-pane network diff, and a built-in SSH dev proxy.",
   "main": "./out/main/index.js",
   "author": "Moravec",
